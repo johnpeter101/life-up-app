@@ -263,7 +263,7 @@ function handleCheckboxChange(event) {
       <div className="left-panel">
         <img src={logo} className='logo' />
         <div className='contTitleLeft' >
-          <label className='labelPanelLeft'>Nueva consulta</label>
+          <label className='labelPanelLeft'>Agregar Taller</label>
           <div className='line'></div>
         </div>
         
@@ -272,9 +272,6 @@ function handleCheckboxChange(event) {
             <label className='txtBTN' onClick={Regresar}>Regresar</label>
           </div>
         </div>
-        <div className='contentImage'>
-         <img src={""} className='imagen' />
-        </div>
       </div>
 
       <div className="right-panel">
@@ -282,9 +279,6 @@ function handleCheckboxChange(event) {
 
           <div className='formContainer'>
             <animated.h1 style={fade} className="titleForm">Agregar taller </animated.h1>
-    <h1>{ID_Personal}</h1>
-    <h1>{ID_User}</h1>
-    <h1>{Nombre}</h1>
             <div className='containerInputLabel'>
               <label className='labelInput'>Nombre de taller:</label>
               <input type="text" class="inputGlobal" placeholder="Nombre" value={nombre} onChange={handleNombre} onInput={handleInput} required />

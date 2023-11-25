@@ -7,6 +7,8 @@ import '../../../GlobalStyles/Resources.css';
 
 import logo from '../../../GlobalStyles/images/logo.svg';
 import imagen from '../../../GlobalStyles/images/image1.png';
+import { FaPlus } from 'react-icons/fa';
+import { Link } from 'react-router-dom';
 
 
 const MenuEnfermeria = () => {
@@ -17,20 +19,13 @@ const MenuEnfermeria = () => {
     const [users, setUsers] = useState([]);
     const navigate = useNavigate();
     const [copiedPersonalID, setCopiedPersonalID] = useState('');
+    const [selectedUser, setSelectedUser] = useState(null);
 
-    const handleRowClick = (personalID) => {
-        // Copiar al portapapeles
-        navigator.clipboard.writeText(personalID);
-        setCopiedPersonalID(personalID);
-        Swal.fire({
-            icon: 'success',
-            title: 'Copiado',
-            text: personalID + ' copiado al portapapeles',
-            showConfirmButton: false,
-            timer: 800
-
-        })
+    const handleRowClick = async (user) => {
+        setSelectedUser(user);
     };
+    // En MenuEnfermeria
+  
 
  const regresar = () => {
     navigate('/MenuApp' , { state: { ID_PERSONAL: ID, Rol: Rol} });
@@ -68,15 +63,20 @@ const MenuEnfermeria = () => {
         navigate("/EditUserPersonal");
     }
 
-    const Expediente = () => {
+   const Expediente = () => {
         navigate("/Salud-Expediente-ID",  { state: { ID_PERSONAL: ID } });
     }
     const Consulta = () => {
         navigate("/Salud-Consulta-ID",  { state: { ID_PERSONAL: ID } });
     }
 
-    
-    
+    const ConsultarExpediente = () => {
+        navigate("/ExpedienteConsulta-Enfermeria");
+    }
+    const ConsultarConsultas = () => {
+        navigate("/Consulta-Enfermeria");
+    }
+
     return (
         <body>
             <div className="left-panel">
@@ -87,14 +87,12 @@ const MenuEnfermeria = () => {
                     <div className='line'></div>
                 </div>
                 <div className='contMenu' >
-                <div className='optionBtn' onClick={Expediente}>
-                        <label className='txtBTN'>Crear expediente</label>
+                    <div className='optionBtn' onClick={ConsultarConsultas}>
+                        <label className='txtBTN'>Consultas</label>
                     </div>
-                    <div className='optionBtn' onClick={Consulta}>
-                        <label className='txtBTN'>Crear consulta médica</label>
+                    <div className='optionBtn' onClick={ConsultarExpediente}>
+                        <label className='txtBTN'>Expedientes</label>
                     </div>
-               
-
                     <div className='optionBtn' onClick={regresar}>
                         <label className='txtBTN'>Regresar</label>
                     </div>
@@ -122,10 +120,13 @@ const MenuEnfermeria = () => {
 
                     <div className='table_container'>
                         <h1 className='titleForm'>Enfermeria {Rol}</h1>
+                        <div className="TABLA" style={{ overflowY: 'auto', maxHeight: '600px', maxWidth: '800px' }}>
                         <table className='table'>
 
                             <thead>
                                 <tr>
+                                    <th>Consulta</th>
+                                    <th>Expediente</th>
                                     <th>ID de Usuario</th>
                                     <th>Centro</th>
                                     <th>Nombre</th>
@@ -138,8 +139,18 @@ const MenuEnfermeria = () => {
                             </thead>
                             <tbody>
                                 {users.map((user) => (
-                                    <tr key={user.UserID} onClick={() => handleRowClick(user.UserID)}>
-                                         <td>{user.UserID}</td>
+                                    <tr key={user.UserID}>
+                                        <td style={{ width: '30px' }}>
+                                            <Link to="/Salud-Consulta-ID" state={{userDetails: user}}>
+                                                <FaPlus />
+                                            </Link>
+                                        </td>
+                                        <td style={{ width: '30px' }}>
+                                            <Link to="/Salud-Expediente-ID" state={{userDetails: user}}>
+                                                <FaPlus />
+                                            </Link>
+                                        </td>
+                                        <td>{user.UserID}</td>
                                         <td>{user.CentroID}</td>
                                         <td>{user.Nombre}</td>
                                         <td>{user.ApellidoPaterno}</td>
@@ -150,7 +161,8 @@ const MenuEnfermeria = () => {
                                     </tr>
                                 ))}
                             </tbody>
-                        </table>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>

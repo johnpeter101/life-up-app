@@ -19,7 +19,7 @@ import '../../../../GlobalStyles/Resources.css';
 import logo from '../../../../GlobalStyles/images/logo.svg';
 import imagen from '../../../../GlobalStyles/images/image1.png';
 
-const ModuleUserDelete = () => {
+const MouleUserDelete = () => {
   const routeLocation = useLocation();
     const ID = routeLocation.state && routeLocation.state.ID_PERSONAL;
     const Rol = routeLocation.state && routeLocation.state.Rol;
@@ -247,4 +247,4 @@ const ModuleUserDelete = () => {
   );
 };
 
-export default ModuleUserDelete;
+export default MouleUserDelete;

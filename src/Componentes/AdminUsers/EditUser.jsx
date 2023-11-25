@@ -17,6 +17,8 @@ import './styleAdd.css';
 
 import logo from '../../GlobalStyles/images/logo.svg';
 import imagen from '../../GlobalStyles/images/image1.png';
+import { useParams } from 'react-router-dom';
+
 
 const EditSuperUsuario = () => {
     const fade = useSpring({ opacity: 1, from: { opacity: 0 } });
@@ -40,6 +42,9 @@ const EditSuperUsuario = () => {
     const [User_ID, setUserID] = useState('');
 
     const navigate = useNavigate();
+
+    const { personalID } = useParams();
+
 
     //////////////////////////////////////////////////////////////---------------> Function para construir PDF
     function obtenerPDF(contraseña){
@@ -115,7 +120,9 @@ const EditSuperUsuario = () => {
 
     //////////////////////////////////////////////////////////////---------------> USE EFFECT()
     useEffect(() => {
-
+        if (personalID) {
+            setPersonalId(personalID);
+        }
         //-----------------------------------------------> Obtener los datos de los centros del servidor al cargar el componente
         const fetchCentro = async () => {
             try {
@@ -151,7 +158,7 @@ const EditSuperUsuario = () => {
         //llamar a los métodos anteriores
         fetchCentro();
         fetchNumUser();
-    }, []);
+    }, [personalID]);
 
     //////////////////////////////////////////////////////////////---------------> Funcion de crear ID de usuario
     function CrearID(idCentro, NumUsuario) {
@@ -377,51 +384,57 @@ function DeleteUser(id) {
 
   }
 
-const handleUpdate = () => {
-    
-    //eliminar registro
-    DeleteUser(PersonalID);
-    //insertar el nuevo
- 
-  
-    //alert(passPDF);
-    //construir el json y enviar
-    const formData = {
-        PersonalID,
-        Rol,
-        ID_Centro,
-        Email,
-        Password,
-        Acceso
+    const handleUpdate = async () => {
+        try {
+            // Eliminar el usuario existente
+            await deleteUser(PersonalID);
+
+            // Crear un objeto con los datos del formulario
+            const formData = {
+                PersonalID,
+                Rol,
+                ID_Centro,
+                Email,
+                Password,
+                Acceso
+            };
+
+            // Enviar los datos al servidor utilizando Axios
+            const response = await axios.post(backendUrl + '/api/AddUser', formData);
+
+            if (response.status === 200) {
+                // Autenticación exitosa, puedes redirigir al usuario a otra página
+                msgUpdateInfo();
+            } else {
+                // Autenticación fallida
+                Alerta('error', 'Sin éxito', 'Falló al registrar la información');
+            }
+        } catch (error) {
+            // Manejar errores si ocurre alguno
+            console.error(error);
+        }
     };
-    
 
-    //enviar
-     // Enviar los datos al servidor utilizando Axios
-     axios.post(backendUrl + '/api/AddUser', formData)
-     .then(response => {
-         // Manejar la respuesta del servidor si es necesario
-         console.log(response.data);
-         if (response.status === 200) {
-             // Autenticación exitosa, puedes redirigir al usuario a otra página
-             //Alerta(icono, titulo, texto) ('Inicio de sesión exitoso');
-             //            navigate("/loader-DashboardSU");
-             //navigate("/loader-DashboardSU");
-             //alert('correcto');
-             //mostrar mensaje para confirmar y descargar
-             msgUpdateInfo();
-            //alert(passPDF);
+    const deleteUser = async (userID) => {
+        try {
+            const requestData = {
+                ID: userID
+            };
 
-         } else {
-             // Autenticación fallida
-             Alerta('error', 'Sin éxito', 'Falló al registrar la información');
-         }
-     })
-     .catch(error => {
-         // Manejar errores si ocurre alguno
-         console.error(error);
-     });
-}
+            const response = await axios.post(backendUrl + '/api/DeleteUserPersonal', requestData);
+
+            if (response.status === 200) {
+                // Éxito al eliminar el usuario
+                console.log('Usuario eliminado exitosamente');
+            } else {
+                // Fallo al eliminar el usuario
+                console.error('Error al eliminar el usuario:', response.data);
+            }
+        } catch (error) {
+            // Manejar errores si ocurre alguno
+            console.error('Error al intentar eliminar el usuario:', error);
+        }
+    };
 
 function msgUpdateInfo(){
     Swal.fire({
@@ -439,8 +452,7 @@ function msgUpdateInfo(){
         //metodo de pdf
         //alert(passPDF);
         handleDownloadPDF();
-
-
+        navigate("/loader-DashboardSU");
         } else if (result.isDenied) {
           Swal.fire('Changes are not saved', '', 'info')
         }
@@ -505,13 +517,13 @@ const handleInputChangePass = (e) => {
 
                             <div className='containerInputLabel'>
                                 <label className='labelInput'>Ingresa el ID del Usuario</label>
-                                <input class="inputGlobal" placeholder="CDIF-0123" type="text" value={PersonalID} onChange={e => setPersonalId(e.target.value)} required />
+                                <input class="inputGlobal" placeholder="" type="text" value={PersonalID} onChange={e => setPersonalId(e.target.value)} required />
                             </div>
 
 
 
 
-                            <button className='buttonPrincipalGlobal' onClick={handleBuscar}>Buscar usuario</button>
+                            <button className='buttonPrincipalGlobal' onClick={handleBuscar}>Actializar Usuario</button>
 
                             <button className='buttonPrincipalGlobal' onClick={Menu}>Cancelar</button>
 

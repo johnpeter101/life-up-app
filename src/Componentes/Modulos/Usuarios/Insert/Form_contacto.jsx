@@ -22,13 +22,16 @@ const Form_user_contacto = () => {
   //Declaraciones de estado para almacenar los datos del los inputs
   const routeLocation = useLocation();
   const ID_recibido = routeLocation.state && routeLocation.state.ID_USER;
+  const ID_Personal = routeLocation.state && routeLocation.state.ID_PERSONAL;
+  const Rol = routeLocation.state && routeLocation.state.Rol;
   const [calle, setCalle] = useState('');
   const [col, setCol] = useState('');
   const [cp, setCp] = useState('');
   const [ciudad, setCiudad] = useState('');
   const [estado, setEstado] = useState('');
   const [delegacion, setDelegacion] = useState('');
-  const UserID = ID_recibido;
+    const UserID = ID_recibido;
+    console.log(ID_Personal);
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////-----------> FUNCIONES 
 //Funciones flecha para navigate
   const Home = () => { navigate("/loader-Home");}
@@ -68,7 +71,7 @@ const Form_user_contacto = () => {
         if (response.status === 200) {
           //alert("enviando: "+UserID);
           AlertaTimer('success', 'Sección completada', 1000);
-         navigate('/addUserEmergencia', { state: { ID_USER: UserID } });
+            navigate('/addUserEmergencia', { state: { ID_USER: UserID, ID_PERSONAL: ID_Personal, Rol: Rol } });
          
         } else {
           // Autenticación fallida

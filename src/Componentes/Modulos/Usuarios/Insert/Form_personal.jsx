@@ -27,14 +27,15 @@ const Form_user_personal = () => {
   const [ID, setID] = useState('');
   const [Indice, setIndice] = useState('');
   const routeLocation = useLocation();
-  const ID_Personal = routeLocation.state && routeLocation.state.ID_PERSONAL;
   const [centroID, setCentro] = useState('');
   const [ultimoUserNum, setNumUs] = useState('');
   const [año, setAño] = useState('');
   let navigate = useNavigate();
   let [email, setEmail] = useState("");
-
-  const [Fechaa, setFecha] = useState('');
+  const ID_Personal = routeLocation.state && routeLocation.state.ID_PERSONAL;
+  const Rol = routeLocation.state && routeLocation.state.Rol;
+    const [Fechaa, setFecha] = useState('');
+    console.log(ID_Personal);
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////-----------> FUNCIONES 
   // Funciones flecha para el navigate
   const Home = () => { navigate("/loader-Home"); }
@@ -53,9 +54,7 @@ const Form_user_personal = () => {
 
   //Función que permite agregar los datos a firebase usando una función llamada addUserNew que se encuentra en services.
   const handleSubmit = (event) => {
-
-
-    
+     
     //variables de base de datos
     const UserID = ID;
     const CentroID = centroID;
@@ -87,6 +86,7 @@ const Form_user_personal = () => {
     }
 
     // Enviar los datos al servidor utilizando Axios
+    
     axios.post(backendUrl + '/api/addInformationPersonalUser', formData)
       .then(response => {
         if (response.status === 200) {
@@ -94,9 +94,9 @@ const Form_user_personal = () => {
           axios.post(backendUrl + '/api/IncrementUSerNum', Data)
             .then(response => {
               if (response.status === 200) {             
-                AlertaTimer('success', 'Sección completada', 1000);
-                navigate('/addUserContacto', { state: { ID_USER: UserID } });
-                
+                  AlertaTimer('success', 'Sección completada', 1000);
+                  navigate('/addUserContacto', { state: { ID_USER: UserID, ID_PERSONAL: ID_Personal } });
+
               } else {
                 // Autenticación fallida
                 Alerta('error', 'Sin éxito', 'Falló al registrar la información');
@@ -115,6 +115,9 @@ const Form_user_personal = () => {
         // Manejar errores si ocurre alguno
         console.error(error);
       });
+      
+      CrearID();
+
   }
 
   //Funciones para las alertas
@@ -140,8 +143,6 @@ const Form_user_personal = () => {
 
   //Función para crear el ID de usuario
   function CrearID(idCentro, indice, ultimosDigitosAño) {
-
-
     //id de personal = ID_Centro + P + Año + Numero de usuario
     const ID = idCentro + "U" + ultimosDigitosAño + indice;
     setID(ID);
@@ -190,7 +191,8 @@ const Form_user_personal = () => {
               const responseData = await response.json();
               const idCentro = responseData.Centro; // Reemplaza "numUs" con el nombre de la propiedad adecuada en "responseData"
               setCentro(idCentro);//obten el numero de usuario ultimo
-              setID(idCentro + "U" + (currentDate.getFullYear() % 100) + (numUs + 1));
+                setID(idCentro + "U" + (currentDate.getFullYear() % 100) + (numUs + 1));
+                console.log(ID);
             }
             // Verificar el estado de la respuesta
           } catch (error) {

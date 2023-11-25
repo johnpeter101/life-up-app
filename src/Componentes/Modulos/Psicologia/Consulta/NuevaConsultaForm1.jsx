@@ -1,245 +1,258 @@
-import React, { useState, useEffect } from 'react';
-import { PDFDocument, rgb } from 'pdf-lib';
-import backendUrl from '../../../../serverConfig';
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////-----------> IMPORTS 
+import { useEffect, useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import axios from 'axios';
-
-
-import Swal from 'sweetalert2';
-import { useNavigate,useLocation } from "react-router-dom";
-import { button, TextField } from '@mui/material';
-import { Select, MenuItem, FormControl, InputLabel } from '@mui/material';
+import backendUrl from '../../../../serverConfig';
 
 import { useSpring, animated } from 'react-spring';
-
-
-import '../../../../GlobalStyles/Resources.css';
-
-
 import logo from '../../../../GlobalStyles/images/logo.svg';
 import imagen from '../../../../GlobalStyles/images/image1.png';
+import Swal from 'sweetalert2';
 
-const ModulePsicoNuevaConsultaID= () => {
-  const fade = useSpring({ opacity: 1, from: { opacity: 0 } });
+/*--------------------------------------------------------  FUNCION PRINCIPAL  -------------------------------------------------------------- */
+const ModulePsicoNuevaConsultaForm = () => {
 
-  //////////////////////////////////////////////////////////////---------------> Variables a utilizar
-  
-  const [Nombre, setNombre] = useState('');
-  const [AP, setAP] = useState('');
-  const [AM, setAM] = useState('');
-  const [pass, setpass] = useState(''); //pass sin hash
-  const [Password, setPassword] = useState('');
-  const [Acceso, setAcceso] = useState('');
-  const [NumUsuario, setNumUs] = useState('');
-  const [centros, setCentros] = useState([]);
-  const [showButtons, setShowButtons] = useState(false);
-  const [validated, setValidated] = useState(false);
-  const [showDiv, setShowDiv] = useState(true);
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////-----------> DECLARACIONES 
+    //Fade para el h1
+    const fade = useSpring({ opacity: 1, from: { opacity: 0 } });
 
-  const [Indice, setIndice] = useState('');
-  const [User_ID, setUserID] = useState('');
-  const routeLocation = useLocation();
-  const navigate = useNavigate();
+    //Declaraciones de estado para almacenar los datos del los inputs
+    const [nombre, setNombre] = useState('');
+    const [ap, setAp] = useState('');
+    const [am, setAm] = useState('');
+    const [edad, setEdad] = useState('');
+    const [sexo, setSexo] = useState('');
+    const [tel, setTel] = useState('');
+    const [ID, setID] = useState('');
+    const [Indice, setIndice] = useState('');
+    const routeLocation = useLocation();
+    const ID_User = routeLocation.state && routeLocation.state.ID_USER;
+    const Nombre = routeLocation.state && routeLocation.state.Nombre;
+    const [centroID, setCentro] = useState('');
+    const [ultimoUserNum, setNumUs] = useState('');
+    const [año, setAño] = useState('');
+    let navigate = useNavigate();
+    let [email, setEmail] = useState("");
+    const [Fecha, setFecha] = useState('');
+    const ID_Personal = routeLocation.state && routeLocation.state.ID_PERSONAL;
+    const [motivo, setMotivo] = useState("");
+    const [objetivos, setObjetivos] = useState("");
+    const [recomendaciones, setRecomendaciones] = useState("");
+    const location = useLocation();
+    const userDetails = location.state && location.state.userDetails;
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////-----------> FUNCIONES 
+    // Funciones flecha para el navigate
+    const Home = () => { navigate("/loader-Home"); }
+    const Regresar = () => { navigate(-1); }
+
+    //-----Funciones para establecer los valores a las declaraciones de estados
+    const handleInputMotivo = (event) => { setMotivo(event.target.value); }
+    const handleInputObjetivos = (event) => { setObjetivos(event.target.value); }
+    const handleInputRecom = (event) => { setRecomendaciones(event.target.value); }
 
 
 
-  const ID_Personal = routeLocation.state && routeLocation.state.ID_PERSONAL;
+    const handleInputEdad = (event) => { setEdad(event.target.value); }
+    const handleInputSexo = (event) => { setSexo(event.target.value); }
+    const handleInputTel = (event) => { setTel(event.target.value); }
+
+    //Función que permite escribir en mayusculas solamente.
+    const handleInput = (event) => { event.target.value = event.target.value.toUpperCase(); };
+
+    //Función que permite agregar los datos a firebase usando una función llamada addUserNew que se encuentra en services.
+    const handleSubmit = (event) => {
 
 
-  //////////////////////////////////////////////////////////////---------------> Metodo para hacer el envío del formulario
-  const handleSubmit = () => {
-    
-    // Envía los datos al servidor
-    // Crear un objeto con los datos del formulario
 
+        //variables de base de datos
+        const UserID = userDetails.UserID;
+        const Motivo = motivo;
+        const Objetivos = objetivos;
+        const Recomendaciones = recomendaciones;
+        const PersonalID = ID_Personal;
 
- 
-
-    //CEDIF-01P2310
-
-    const requestData = {
-      ID: User_ID
-    };
-
-    axios.post(backendUrl + '/api/UserInfoSearch', requestData)
-      .then(response => {
-        // Maneja la respuesta del servidor aquí
-        if (JSON.stringify(response.data).length == 2) {
-          //que no se encotro usuario
-          Alerta('error', 'Sin éxito', 'No se encontró el usuario');
+        //construcción del formData
+        const formData = {
+            UserID,
+            Motivo,
+            Objetivos,
+            Recomendaciones,
+            Fecha,
+            PersonalID
+        };
+        const Data = {
+            Indice,
+            UserID
         }
-        else {
-          //Alerta('success', 'si', 'encontró el usuario');
-          //pasar valores del json
-          response.data.forEach(item => {
 
-            setNombre(item.Nombre);
-            setAP(item.ApellidoPaterno);
-            setAM(item.ApellidoMaterno);
-            
-            //alert(item.Email); // Acceder a una propiedad específica de cada elemento
+        axios.post(backendUrl + '/api/Psicologia-Insert-NewConsult', formData)
+            .then(response => {
+                if (response.status === 200) {
+                    AlertaTimer('success', 'Información completada', 1000);
+                    navigate('/MenuPsicologia', { state: { ID_PERSONAL: ID_Personal } });
 
-            Swal.fire({
-              title: 'Usuario encontrada',
-              text: 'Se ha localizado exitosamente',
-              showDenyButton: false,
-              showCancelButton: false,
-              confirmButtonText: 'Continuar ',
-              denyButtonText: 'No, cancelar',
-            }).then((result) => {
-              /* Read more about isConfirmed, isDenied below */
-              if (result.isConfirmed) {
-                //Swal.fire('Eliminado', '', 'success')
-                //eliminar
-                
-                navigate("/Psicologia-NewConsult-Form" , { state: { ID_USER: User_ID, ID_PERSONAL: ID_Personal, Nombre: (item.Nombre+" "+item.ApellidoPaterno+" "+item.ApellidoMaterno)} });
-        
-        
-              } else if (result.isDenied) {
-                Swal.fire('Changes are not saved', '', 'info')
-              }
+                } else {
+                    // Autenticación fallida
+                    Alerta('error', 'Sin éxito', 'Falló al registrar la información');
+                }
             })
+            .catch(error => {
+                // Manejar errores si ocurre alguno
+                console.error(error);
+            });
+    }
 
-          });
-          
+    //Funciones para las alertas
+    function Alerta(icono, titulo, texto) {
+        Swal.fire({
+            icon: icono,
+            title: titulo,
+            text: texto,
+            confirmButtonColor: '#4CAF50',
+            confirmButtonText: 'Aceptar'
+        })
+    }
 
+    function AlertaTimer(icono, titulo, tiempo) {
+        Swal.fire({
+            position: 'center',
+            icon: icono,
+            title: titulo,
+            showConfirmButton: false,
+            timer: tiempo
+        })
+    }
 
-
-        }
-      })
-      .catch(error => {
-        // Maneja los errores aquí
-        console.error(error);
-      });
-
-
-
-  };
-
-  /////////////////////////////////////////////////////////////////////////-----------------> delete user
-  function DeleteUser(id) {
-    const requestData = {
-      ID: id
-    };
-
-    axios.post(backendUrl + '/api/DeleteUserInfoComplete', requestData)
-      .then(response => {
-        // Manejar la respuesta del servidor si es necesario
-        console.log(response.data);
-        if (response.status === 200) {
-          AlertaTimer('success', 'Completado', 'Se ha eliminado correctamente', 1500);
-
-          navigate(-1);
-        } else {
-          // Autenticación fallida
-          Alerta('error', 'Sin éxito', 'Falló al eliminar la información');
-        }
-      })
-      .catch(error => {
-        // Manejar errores si ocurre alguno
-        console.error(error);
-      });
-
-  }
-
-  function msgDelete(PersonalID, Nombre, AP, AM){
-    Swal.fire({
-      title: '¿Deseas eliminar al siguiente usuario?',
-      html: '<div style="text-align: left;"><strong>ID:  </strong>' + PersonalID + '</div><div style="text-align: left;"><strong>Nombre:  </strong>' + Nombre + '</div><div style="text-align: left;"><strong>Apellido Paterno:  </strong>' + AP + '</div><div style="text-align: left;"><strong>ApellidoMaterno:  </strong>' + AM,
-      showDenyButton: false,
-      showCancelButton: true,
-      confirmButtonText: 'Sí, eliminar',
-      denyButtonText: 'No, cancelar',
-    }).then((result) => {
-      /* Read more about isConfirmed, isDenied below */
-      if (result.isConfirmed) {
-        //Swal.fire('Eliminado', '', 'success')
-        //eliminar
-        DeleteUser(PersonalID);
-      } else if (result.isDenied) {
-        Swal.fire('Changes are not saved', '', 'info')
-      }
-    })
-  }
-  //////////////////////////////////////////////////////////////---------------> Metodo para manejar el cambio de estado del combo de Rol
+    //Función para crear el ID de usuario
+    function CrearID(idCentro, indice, ultimosDigitosAño) {
 
 
-  //////////////////////////////////////////////////////////////---------------> Método para validar si los textbox tienen texto y crear el user ID
+        //id de personal = ID_Centro + P + Año + Numero de usuario
+        const ID = idCentro + "U" + ultimosDigitosAño + indice;
+        setID(ID);
+    }
 
 
-  function Alerta(icono, titulo, texto) {
-    Swal.fire({
-      icon: icono,
-      title: titulo,
-      text: texto,
-      confirmButtonColor: '#4CAF50',
-      confirmButtonText: 'Aceptar'
-    })
-  }
-  function AlertaTimer(icono, titulo, texto, tiempo) {
-    Swal.fire({
-      position: 'center',
-      icon: icono,
-      title: titulo,
-      text: texto,
-      showConfirmButton: false,
-      timer: tiempo
-    })
-  }
-
-  const GoFormCosulta = () => {
-    navigate("/Psicologia-NewConsult-Form");
-  }
-
-  const Regresar = () => { navigate(-1); }
-
-  //////////////////////////////////////////////////////////////---------------RETURN()-------------//////////////////////////////////////////////////////////////////////////////////
-
-  return (
-    <body>
-      <div className="left-panel">
-        <img src={logo} className='logo' />
-        <div className='contTitleLeft' >
-          <label className='labelPanelLeft'>Crear nueva consulta</label>
-          <div className='line'></div>
-        </div>
-        <div className='contMenu' >
-          <div className='optionBtn' onClick={Regresar}>
-            <label className='txtBTN'>Volver al menú</label>
-          </div>
-
-        </div>
-        <div className='contentImage'>
-         <img src={""} className='imagen' />
-        </div>
-      </div>
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////-----------> USE EFFECT() 
+    useEffect(() => {
+        //Obtener la fecha y su ultimo digito del año
+        const currentDate = new Date();
+        setAño(currentDate.getFullYear() % 100)
+        const ID_generado = "";
 
 
+        const fechaActual = new Date();
+
+        // Obtén el día, mes y año por separado
+        const dia = fechaActual.getDate();
+        const mes = fechaActual.getMonth() + 1; // Los meses comienzan en 0, por lo que sumamos 1
+        const anio = fechaActual.getFullYear();
+
+        // Obtén la fecha en formato deseado (por ejemplo, dd/mm/yyyy)
+        const fechaFormateada = dia + "/" + mes + "/" + anio;
+        setFecha(fechaFormateada);
+
+        //-----------------------------------------------> Obtener el numero de usuarios
+        const fetchNumUser = async () => {
+            try {
+                const response = await fetch(backendUrl + '/api/GetNumUser');
+                const responseData = await response.json();
+                if (response.ok) {
+                    const numUs = responseData.Indice; // Reemplaza "numUs" con el nombre de la propiedad adecuada en "responseData"
+                    setNumUs(numUs);//obten el numero de usuario ultimo
+                    setIndice(numUs + 1);
+                    try {
+                        // Hacer una solicitud POST al punto final de inicio de sesión en el servidor
+                        const response = await fetch(backendUrl + '/api/GetCentroID', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({ ID_Personal }),
+                        });
+                        // Verificar el estado de la respuesta
+                        if (response.status === 200) {
+                            const responseData = await response.json();
+                            const idCentro = responseData.Centro; // Reemplaza "numUs" con el nombre de la propiedad adecuada en "responseData"
+                            setCentro(idCentro);//obten el numero de usuario ultimo
+                            setID(idCentro + "U" + (currentDate.getFullYear() % 100) + (numUs + 1));
+                        }
+                        // Verificar el estado de la respuesta
+                    } catch (error) {
+                        // Manejar errores de solicitud
+                        //setError('An error occurred');
+                    }
+                } else {
+                    console.error('Error al obtener los datos de usuarios');
+                }
+            } catch (error) {
+                console.error('Error al enviar la solicitud:', error.message);
+            }
+        };
+
+        //------------------------------------------------->obtener centro
 
 
-      <div className="right-panel">
-        <div className="right-panel-content">
-          <div className='formContainer'>
-            <animated.h1 style={fade} className="titleForm">Buscar usuario</animated.h1>
+        fetchNumUser();
 
-            <div className='containerInputLabel'>
-              <label className='labelInput'>Ingresa el ID del Usuario</label>
-              <input class="inputGlobal" placeholder="ID" type="text" value={User_ID} onChange={e => setUserID(e.target.value)} required />
+    }, [navigate]);
+
+
+    //ID - > es el id de usuario
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////-----------> RETURN () 
+    return (
+        <body>
+            <div className="left-panel">
+                <img src={logo} className='logo' />
+                <div className='contTitleLeft' >
+
+                    <label className='labelPanelLeft'><strong>Nueva Consulta</strong></label>
+                    <div className='line'></div>
+                </div>
+
+                <div className='contMenu' >
+                    <div className='optionBtn' >
+                        <label className='txtBTN' onClick={Regresar}>Regresar</label>
+                    </div>
+                </div>
+                <div className='contentImage'>
+                    <img src={""} className='imagen' />
+                </div>
             </div>
 
+            <div className="right-panel">
+                <div className="right-panel-content">
 
+                    <div className='formContainer'>
+                        <animated.h1 style={fade} className="titleForm">Información personal </animated.h1>
+                        <h1>{userDetails.UserID}</h1>
+                        <h1>{userDetails.Nombre}</h1>
+                        <div className='containerInputLabel'>
+                            <label className='labelInput'>Motivo de consulta:</label>
+                            <input type="text" class="inputGlobal" placeholder="Motivo..." value={motivo} onChange={handleInputMotivo} onInput={handleInput} required />
+                        </div>
 
+                        <div className='containerInputLabel'>
+                            <label className='labelInput'>Objetivos terapeuticos:</label>
+                            <textarea type="" class="inputGlobal" placeholder="Objetivos" value={objetivos} onChange={handleInputObjetivos} onInput={handleInput} required />
+                        </div>
 
-            <button className='buttonPrincipalGlobal' onClick={handleSubmit}>Buscar usuario</button>
+                        <div className='containerInputLabel'>
+                            <label className='labelInput'>Recomendaciones:</label>
+                            <input type="text" class="inputGlobal" placeholder="Recomendaciones" value={recomendaciones} onChange={handleInputRecom} onInput={handleInput} required />
+                        </div>
 
-            <button className='buttonPrincipalGlobal' onClick={Regresar}>Cancelar</button>
+                        <button type="submit" className='buttonPrincipalGlobal' onClick={handleSubmit} >Enviar </button>
+                    </div>
 
-          </div>
-        </div>
+                </div>
 
-      </div>
+            </div>
 
-    </body>
-  );
-};
+            <div className="">
+            </div>
+        </body>
+    );
+}
 
-export default ModulePsicoNuevaConsultaID;
+export default ModulePsicoNuevaConsultaForm;

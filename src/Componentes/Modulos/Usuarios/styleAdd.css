@@ -23,7 +23,7 @@
     "WIDGET-1 WIDGET-2 CARD"
     "TABLA TABLA CARD"
     "TABLA TABLA CARD";
-  height: 100%;
+  height:auto;
 }
 
 .WIDGET-1 { 
@@ -57,14 +57,14 @@
   
 }
 
-.TABLA { 
-  grid-area: TABLA; 
-  background-color: rgb(240, 240, 240);
-  margin: 3px;
-  box-shadow: 2px 4px 5px 0px  rgba(0, 0, 0, 0.2);
-  padding: 10px;
-  display: flex;
-  justify-content: start;
-  flex-direction: column;
-  text-align: center;
+.TABLA {
+    grid-area: TABLA;
+    background-color: rgb(240, 240, 240);
+    margin: 3px;
+    box-shadow: 2px 4px 5px 0px rgba(0, 0, 0, 0.2);
+    padding: 10px;
+    display: flex;
+    justify-content: start;
+    flex-direction: column;
+    text-align: center;
 }

@@ -27,6 +27,8 @@ const Form_user_photo = () => {
   const [Indice, setIndice] = useState('');
   const routeLocation = useLocation();
   const ID_recibido = routeLocation.state && routeLocation.state.ID_USER;
+  const ID_Personal = routeLocation.state && routeLocation.state.ID_PERSONAL;
+  const Rol = routeLocation.state && routeLocation.state.Rol;
   let navigate = useNavigate();
   let [email, setEmail] = useState("");
   const [calle, setCalle] = useState('');
@@ -39,7 +41,7 @@ const Form_user_photo = () => {
   //nunmero de usuarios
   const [ultimoUserNum, setNumUs] = useState('');
   const [año, setAño] = useState('');
-
+    console.log(ID_Personal);
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////-----------> FUNCIONES 
 
   //funciones para el navigate
@@ -96,7 +98,7 @@ const Form_user_photo = () => {
           //redigir y pasar el ID
           //navigate("/loader-DashboardSU");
           AlertaTimer('success', 'Sección completada', 1000);
-          navigate('/addUserEmergencia', { state: { ID_USER: ID_recibido } });
+            navigate('/addUserEmergencia', { state: { ID_USER: ID_recibido, ID_PERSONAL: ID_Personal, Rol: Rol } });
 
         } else {
           // Autenticación fallida
@@ -164,8 +166,8 @@ const Form_user_photo = () => {
       .then(response => {
         
         if (response.status === 200) {
-          AlertaTimer('success', 'Sección completada', 1000);
-          navigate('/formFinal', { state: { ID_USER: ID_recibido } });
+            AlertaTimer('success', 'Sección completada', 1000);
+            navigate('/formFinal', { state: { ID_USER: ID_recibido, ID_PERSONAL: ID_Personal } });
           
           //hacer el incremento de ususarios
          /*  .then(response => {

@@ -49,10 +49,13 @@ const Form_user_finally = () => {
   const [amEmergency, setAmEmergency] = useState('');
   const [TelEmergency, setTelEmergency] = useState('');
   const [parentescoEmergency, setParentescoEmergency] = useState('');
+  const ID_Personal = routeLocation.state && routeLocation.state.ID_PERSONAL;
+    const Rol = routeLocation.state && routeLocation.state.Rol;
+    console.log(ID_Personal);
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////-----------> FUNCIONES 
 
   //funciones para el navigate
-  const HomeUser = () => { navigate("/MenuUsers"); }
+  const HomeUser = () => { navigate('/MenuUsers', { state: { ID_PERSONAL: ID_Personal } }); }
   const Regresar = () => { navigate(-1); }
 
   //Función que permite escribir en mayusculas solamente.
@@ -104,8 +107,8 @@ const Form_user_finally = () => {
 
           //redigir y pasar el ID
           //navigate("/loader-DashboardSU");
-          AlertaTimer('success', 'Sección completada', 1000);
-          navigate('/addUserFoto', { state: { ID_USER: ID_recibido } });
+            AlertaTimer('success', 'Sección completada', 1000);
+            navigate('/addUserFoto', { state: { ID_USER: ID_recibido, ID_PERSONAL: ID_Personal, Rol: Rol } });
 
         } else {
           // Autenticación fallida
@@ -163,9 +166,6 @@ const Form_user_finally = () => {
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////-----------> USE EFFECT() 
   useEffect(() => {
- //variables de base de datos
- 
-    
  const formData = {
    UserID
  };
@@ -263,17 +263,13 @@ const Form_user_finally = () => {
               <p className="ParrafoInformacionFinal">Nombre: {nombreEmergency} {apEmergency} {amEmergency}</p> 
               <p className="ParrafoInformacionFinal">Telefóno: {TelEmergency}</p> 
               <p className="ParrafoInformacionFinal">Parentesco: {parentescoEmergency}</p> 
-              <p className="ParrafoInformacionFinal">Parentesco: {url}</p> 
+              <p className="ParrafoInformacionFinal">Direccion de la Foto: {url}</p> 
              
             </div>
 
-            <div className='containerInputLabel'>
-              <label className='labelInput'>Fotografía:</label>
-              <p>Se generó correctamente el usuario, puedes descargar tu comprobante</p>
-            </div>
 
 
-            <button type="submit" className='buttonPrincipalGlobal' onClick={''} >Descargar</button>
+
             <button type="submit" className='buttonPrincipalGlobal' onClick={HomeUser} >Finalizar</button>
           </div>
         </div>

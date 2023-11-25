@@ -8,8 +8,8 @@ import { AddTallerFirebase, UpdateTallerFirebase} from '../../services/firebaseT
 import Swal from 'sweetalert2';
 import firebase from "../../firebase";
 import Header from '../Header';
-import './tallerDash.css';
-import imgImageForm from './images/editIMG.png';
+import '././tallerDash.css';
+import imgImageForm from '././images/editIMG.png';
 
 const ActualizarTaller = () => {
 

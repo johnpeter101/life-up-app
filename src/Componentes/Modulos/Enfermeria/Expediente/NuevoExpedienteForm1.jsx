@@ -1,245 +1,373 @@
-import React, { useState, useEffect } from 'react';
-import { PDFDocument, rgb } from 'pdf-lib';
-import backendUrl from '../../../../serverConfig';
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////-----------> IMPORTS 
+import { useEffect, useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import axios from 'axios';
-
-
-import Swal from 'sweetalert2';
-import { useNavigate,useLocation } from "react-router-dom";
-import { button, TextField } from '@mui/material';
-import { Select, MenuItem, FormControl, InputLabel } from '@mui/material';
+import backendUrl from '../../../../serverConfig';
 
 import { useSpring, animated } from 'react-spring';
-
-
-import '../../../../GlobalStyles/Resources.css';
-
-
 import logo from '../../../../GlobalStyles/images/logo.svg';
 import imagen from '../../../../GlobalStyles/images/image1.png';
+import Swal from 'sweetalert2';
 
-const ModuleSaludNewExpedienteID= () => {
-  const fade = useSpring({ opacity: 1, from: { opacity: 0 } });
+/*--------------------------------------------------------  FUNCION PRINCIPAL  -------------------------------------------------------------- */
+const ModuleSaludNewConsultaForm = () => {
 
-  //////////////////////////////////////////////////////////////---------------> Variables a utilizar
-  
-  const [Nombre, setNombre] = useState('');
-  const [AP, setAP] = useState('');
-  const [AM, setAM] = useState('');
-  const [pass, setpass] = useState(''); //pass sin hash
-  const [Password, setPassword] = useState('');
-  const [Acceso, setAcceso] = useState('');
-  const [NumUsuario, setNumUs] = useState('');
-  const [centros, setCentros] = useState([]);
-  const [showButtons, setShowButtons] = useState(false);
-  const [validated, setValidated] = useState(false);
-  const [showDiv, setShowDiv] = useState(true);
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////-----------> DECLARACIONES 
+    //Fade para el h1
+    const fade = useSpring({ opacity: 1, from: { opacity: 0 } });
 
-  const [Indice, setIndice] = useState('');
-  const [User_ID, setUserID] = useState('');
-  const routeLocation = useLocation();
-  const navigate = useNavigate();
+    //Declaraciones de estado para almacenar los datos del los inputs
+    const [nombre, setNombre] = useState('');
+    const [ap, setAp] = useState('');
+    const [am, setAm] = useState('');
+    const [edad, setEdad] = useState('');
+    const [sexo, setSexo] = useState('');
+    const [tel, setTel] = useState('');
+    const [ID, setID] = useState('');
+    const [Indice, setIndice] = useState('');
+    const routeLocation = useLocation();
+    const ID_Personal = routeLocation.state && routeLocation.state.ID_PERSONAL;
+    const ID_User = routeLocation.state && routeLocation.state.ID_USER;
+    const Nombre = routeLocation.state && routeLocation.state.Nombre;
+    const [centroID, setCentro] = useState('');
+    const [ultimoUserNum, setNumUs] = useState('');
+    const [año, setAño] = useState('');
+    let navigate = useNavigate();
+    let [email, setEmail] = useState("");
 
-
-
-  const ID_Personal = routeLocation.state && routeLocation.state.ID_PERSONAL;
-
-
-  //////////////////////////////////////////////////////////////---------------> Metodo para hacer el envío del formulario
-  const handleSubmit = () => {
-    
-    // Envía los datos al servidor
-    // Crear un objeto con los datos del formulario
+    const [Fecha, setFecha] = useState('');
 
 
- 
 
-    //CEDIF-01P2310
+    const [objetivos, setObjetivos] = useState("");
+    const [recomendaciones, setRecomendaciones] = useState("");
 
-    const requestData = {
-      ID: User_ID
-    };
 
-    axios.post(backendUrl + '/api/UserInfoSearch', requestData)
-      .then(response => {
-        // Maneja la respuesta del servidor aquí
-        if (JSON.stringify(response.data).length == 2) {
-          //que no se encotro usuario
-          Alerta('error', 'Sin éxito', 'No se encontró el usuario');
+
+
+    const [padecimientos, setPadecimientos] = useState('');
+    const [alergias, setAlergias] = useState('');
+    const [sangre, setSangre] = useState('');
+
+
+    const [selectDesactivado, setSelectDesactivado] = useState(false);
+
+    const [selectDesactivadoAlergias, setSelectDesactivadoAlergias] = useState(false);
+
+
+    const [temp, setTemp] = useState('');
+    const [fc, setFc] = useState('');
+    const [presion, setPresion] = useState('');
+    const [fr, setFr] = useState('');
+    const [sos, setSos] = useState('');
+    const [medic, setMedic] = useState('');
+    const [motivo, setMotivo] = useState('');
+    const [recom, setRecom] = useState('');
+    const [glucosa, setGlucosa] = useState('');
+    const location = useLocation();
+    const userDetails = location.state && location.state.userDetails;
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////-----------> FUNCIONES 
+    // Funciones flecha para el navigate
+    const Home = () => { navigate("/loader-Home"); }
+    const Regresar = () => { navigate(-1); }
+
+    //-----Funciones para establecer los valores a las declaraciones de estados
+    const handleInputMotivo = (event) => { setMotivo(event.target.value); }
+    const handleInputObjetivos = (event) => { setObjetivos(event.target.value); }
+    const handleInputRecom = (event) => { setRecomendaciones(event.target.value); }
+
+
+
+    const handleInputEdad = (event) => { setEdad(event.target.value); }
+    const handleInputSexo = (event) => { setSexo(event.target.value); }
+    const handleInputTel = (event) => { setTel(event.target.value); }
+
+
+    function handleCheckboxChange(event) {
+        setSelectDesactivado(event.target.checked);
+        setPadecimientos("NINGUNO");
+        console.log(padecimientos);
+    }
+
+    function handleCheckboxChangeAlergias(event) {
+        setSelectDesactivadoAlergias(event.target.checked);
+        setAlergias("NINGUNO");
+        console.log(alergias);
+    }
+
+
+    //Función que permite escribir en mayusculas solamente.
+    const handleInput = (event) => { event.target.value = event.target.value.toUpperCase(); };
+
+    //Función que permite agregar los datos a firebase usando una función llamada addUserNew que se encuentra en services.
+    //Función que permite agregar los datos a firebase usando una función llamada addUserNew que se encuentra en services.
+    const handleSubmit = async (event) => {
+            // variables de base de datos
+            const UserID = userDetails.UserID;
+            const Motivo = motivo;
+            const Padecimientos = padecimientos;
+            const Alergias = alergias;
+            const PersonalID = ID_Personal;
+
+            // construcción del formData
+            const formData = {
+                UserID,
+                PersonalID,
+                Alergias,
+                Padecimientos
+            };
+
+            const expedienteExistente = await axios.post(`${backendUrl}/api/CheckExpediente`, { ID: userDetails.UserID });
+
+            if (!expedienteExistente.data.existe) {
+                // No existe el expediente, proceder con la creación
+                try {
+                    const response = await axios.post(`${backendUrl}/api/Salud-Insert-NewExpedient`, formData);
+
+                    if (response.status === 200) {
+                        AlertaTimer('success', 'Información completada', 1000);
+                        navigate('/MenuEnfermeria', { state: { ID_PERSONAL: ID_Personal } });
+                    } else {
+                        Alerta('error', 'Sin éxito', 'Falló al registrar la información');
+                    }
+                } catch (error) {
+                    console.error(error);
+                }
+            } else {
+                // Mostrar alerta indicando que el usuario ya tiene expediente
+                Alerta('warning', 'Advertencia', 'El usuario ya tiene un expediente.');
+            }
         }
-        else {
-          //Alerta('success', 'si', 'encontró el usuario');
-          //pasar valores del json
-          response.data.forEach(item => {
 
-            setNombre(item.Nombre);
-            setAP(item.ApellidoPaterno);
-            setAM(item.ApellidoMaterno);
-            
-            //alert(item.Email); // Acceder a una propiedad específica de cada elemento
+    //Funciones para las alertas
+    function Alerta(icono, titulo, texto) {
+        Swal.fire({
+            icon: icono,
+            title: titulo,
+            text: texto,
+            confirmButtonColor: '#4CAF50',
+            confirmButtonText: 'Aceptar'
+        })
+    }
 
-            Swal.fire({
-              title: 'Usuario encontrada',
-              text: 'Se ha localizado exitosamente',
-              showDenyButton: false,
-              showCancelButton: false,
-              confirmButtonText: 'Continuar ',
-              denyButtonText: 'No, cancelar',
-            }).then((result) => {
-              /* Read more about isConfirmed, isDenied below */
-              if (result.isConfirmed) {
-                //Swal.fire('Eliminado', '', 'success')
-                //eliminar
-                
-                navigate("/Salud-Expediente-Create" , { state: { ID_USER: User_ID, ID_PERSONAL: ID_Personal, Nombre: (item.Nombre+" "+item.ApellidoPaterno+" "+item.ApellidoMaterno)} });
-        
-        
-              } else if (result.isDenied) {
-                Swal.fire('Changes are not saved', '', 'info')
-              }
-            })
+    function AlertaTimer(icono, titulo, tiempo) {
+        Swal.fire({
+            position: 'center',
+            icon: icono,
+            title: titulo,
+            showConfirmButton: false,
+            timer: tiempo
+        })
+    }
 
-          });
-          
+    //Función para crear el ID de usuario
+    function CrearID(idCentro, indice, ultimosDigitosAño) {
 
 
-
-        }
-      })
-      .catch(error => {
-        // Maneja los errores aquí
-        console.error(error);
-      });
+        //id de personal = ID_Centro + P + Año + Numero de usuario
+        const ID = idCentro + "U" + ultimosDigitosAño + indice;
+        setID(ID);
+    }
 
 
-
-  };
-
-  /////////////////////////////////////////////////////////////////////////-----------------> delete user
-  function DeleteUser(id) {
-    const requestData = {
-      ID: id
-    };
-
-    axios.post(backendUrl + '/api/DeleteUserInfoComplete', requestData)
-      .then(response => {
-        // Manejar la respuesta del servidor si es necesario
-        console.log(response.data);
-        if (response.status === 200) {
-          AlertaTimer('success', 'Completado', 'Se ha eliminado correctamente', 1500);
-
-          navigate(-1);
-        } else {
-          // Autenticación fallida
-          Alerta('error', 'Sin éxito', 'Falló al eliminar la información');
-        }
-      })
-      .catch(error => {
-        // Manejar errores si ocurre alguno
-        console.error(error);
-      });
-
-  }
-
-  function msgDelete(PersonalID, Nombre, AP, AM){
-    Swal.fire({
-      title: '¿Deseas eliminar al siguiente usuario?',
-      html: '<div style="text-align: left;"><strong>ID:  </strong>' + PersonalID + '</div><div style="text-align: left;"><strong>Nombre:  </strong>' + Nombre + '</div><div style="text-align: left;"><strong>Apellido Paterno:  </strong>' + AP + '</div><div style="text-align: left;"><strong>ApellidoMaterno:  </strong>' + AM,
-      showDenyButton: false,
-      showCancelButton: true,
-      confirmButtonText: 'Sí, eliminar',
-      denyButtonText: 'No, cancelar',
-    }).then((result) => {
-      /* Read more about isConfirmed, isDenied below */
-      if (result.isConfirmed) {
-        //Swal.fire('Eliminado', '', 'success')
-        //eliminar
-        DeleteUser(PersonalID);
-      } else if (result.isDenied) {
-        Swal.fire('Changes are not saved', '', 'info')
-      }
-    })
-  }
-  //////////////////////////////////////////////////////////////---------------> Metodo para manejar el cambio de estado del combo de Rol
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////-----------> USE EFFECT() 
+    useEffect(() => {
+        //Obtener la fecha y su ultimo digito del año
+        const currentDate = new Date();
+        setAño(currentDate.getFullYear() % 100)
+        const ID_generado = "";
 
 
-  //////////////////////////////////////////////////////////////---------------> Método para validar si los textbox tienen texto y crear el user ID
+        const fechaActual = new Date();
+
+        // Obtén el día, mes y año por separado
+        const dia = fechaActual.getDate();
+        const mes = fechaActual.getMonth() + 1; // Los meses comienzan en 0, por lo que sumamos 1
+        const anio = fechaActual.getFullYear();
+
+        // Obtén la fecha en formato deseado (por ejemplo, dd/mm/yyyy)
+        const fechaFormateada = dia + "/" + mes + "/" + anio;
+        setFecha(fechaFormateada);
+
+        //-----------------------------------------------> Obtener el numero de usuarios
+        const fetchNumUser = async () => {
+            try {
+                const response = await fetch(backendUrl + '/api/GetNumUser');
+                const responseData = await response.json();
+                if (response.ok) {
+                    const numUs = responseData.Indice; // Reemplaza "numUs" con el nombre de la propiedad adecuada en "responseData"
+                    setNumUs(numUs);//obten el numero de usuario ultimo
+                    setIndice(numUs + 1);
+                    try {
+                        // Hacer una solicitud POST al punto final de inicio de sesión en el servidor
+                        const response = await fetch(backendUrl + '/api/GetCentroID', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({ ID_Personal }),
+                        });
+                        // Verificar el estado de la respuesta
+                        if (response.status === 200) {
+                            const responseData = await response.json();
+                            const idCentro = responseData.Centro; // Reemplaza "numUs" con el nombre de la propiedad adecuada en "responseData"
+                            setCentro(idCentro);//obten el numero de usuario ultimo
+                            setID(idCentro + "U" + (currentDate.getFullYear() % 100) + (numUs + 1));
+                        }
+                        // Verificar el estado de la respuesta
+                    } catch (error) {
+                        // Manejar errores de solicitud
+                        //setError('An error occurred');
+                    }
+                } else {
+                    console.error('Error al obtener los datos de usuarios');
+                }
+            } catch (error) {
+                console.error('Error al enviar la solicitud:', error.message);
+            }
+        };
+
+        //------------------------------------------------->obtener centro
 
 
-  function Alerta(icono, titulo, texto) {
-    Swal.fire({
-      icon: icono,
-      title: titulo,
-      text: texto,
-      confirmButtonColor: '#4CAF50',
-      confirmButtonText: 'Aceptar'
-    })
-  }
-  function AlertaTimer(icono, titulo, texto, tiempo) {
-    Swal.fire({
-      position: 'center',
-      icon: icono,
-      title: titulo,
-      text: texto,
-      showConfirmButton: false,
-      timer: tiempo
-    })
-  }
+        fetchNumUser();
 
-  const GoFormCosulta = () => {
-    navigate("/Psicologia-NewConsult-Form");
-  }
+    }, [navigate]);
 
-  const Regresar = () => { navigate(-1); }
 
-  //////////////////////////////////////////////////////////////---------------RETURN()-------------//////////////////////////////////////////////////////////////////////////////////
+    const handleInputPad = (event) => {
+        setPadecimientos(event.target.value);
+    }
 
-  return (
-    <body>
-      <div className="left-panel">
-        <img src={logo} className='logo' />
-        <div className='contTitleLeft' >
-          <label className='labelPanelLeft'>Crear nuevo expediente</label>
-          <div className='line'></div>
-        </div>
-        <div className='contMenu' >
-          <div className='optionBtn' onClick={Regresar}>
-            <label className='txtBTN'>Volver al menú</label>
-          </div>
+    const handleInputAlergias = (event) => {
+        setAlergias(event.target.value);
+    }
 
-        </div>
-        <div className='contentImage'>
-         <img src={""} className='imagen' />
-        </div>
-      </div>
+    const handleInputSangre = (event) => {
+        setSangre(event.target.value);
+    }
 
 
 
+    //hooks de inputsConsulta
+    const handleTemp = (event) => {
+        setTemp(event.target.value);
+    }
 
-      <div className="right-panel">
-        <div className="right-panel-content">
-          <div className='formContainer'>
-            <animated.h1 style={fade} className="titleForm">Buscar usuario</animated.h1>
+    const handleFc = (event) => {
+        setFc(event.target.value);
+    }
 
-            <div className='containerInputLabel'>
-              <label className='labelInput'>Ingresa el ID del Usuario</label>
-              <input class="inputGlobal" placeholder="ID" type="text" value={User_ID} onChange={e => setUserID(e.target.value)} required />
+    const handlePresion = (event) => {
+        const nuevaPresion = event.target.value.replace('/', '-');
+        console.log(nuevaPresion);
+        setPresion(event.target.value);
+    }
+    const handleFr = (event) => {
+        setFr(event.target.value);
+    }
+    const handleSos = (event) => {
+        setSos(event.target.value);
+    }
+    const handleMedic = (event) => {
+        setMedic(event.target.value);
+    }
+    const handleMotivo = (event) => {
+        setMotivo(event.target.value);
+    }
+    const handleRecom = (event) => {
+        setRecom(event.target.value);
+    }
+    const handleGlucosa = (event) => {
+        setGlucosa(event.target.value);
+    }
+
+    //ID - > es el id de usuario
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////-----------> RETURN () 
+    return (
+        <body>
+            <div className="left-panel">
+                <img src={logo} className='logo' />
+                <div className='contTitleLeft' >
+                    <label className='labelPanelLeft'>Nueva consulta médica</label>
+                    <div className='line'></div>
+                </div>
+
+                <div className='contMenu' >
+                    <div className='optionBtn' >
+                        <label className='txtBTN' onClick={Regresar}>Regresar</label>
+                    </div>
+                </div>
+                <div className='contentImage'>
+                    <img src={""} className='imagen' />
+                </div>
             </div>
 
+            <div className="right-panel">
+                <div className="right-panel-content">
 
+                    <div className='formContainer'>
+                        <animated.h1 style={fade} className="titleForm">Información personal </animated.h1>
+                        <h1>{userDetails.UserID}</h1>
+                        <h1>{userDetails.Nombre}</h1>
+                        <div className='containerInputLabel'>
+                            <label className='labelInput'>Padecimientos:</label>
 
+                            <select name="select" id="mi-select" className="inputGlobal" value={padecimientos} onChange={handleInputPad} required>
 
-            <button className='buttonPrincipalGlobal' onClick={handleSubmit}>Buscar usuario</button>
+                                <option value="Ninguna">Ninguna</option>
+                                <option value="Diabetes">Diabetes</option>
+                                <option value="Hipertensión arterial" >Hipertensión arterial</option>
+                                <option value="Enfermedades cardiovasculares" >Enfermedades cardiovasculares</option>
+                                <option value="Enfermedad pulmonar obstructiva crónica " >Enfermedad pulmonar obstructiva crónica </option>
+                                <option value="Asma" >Asma</option>
+                                <option value="Artritis" >Artritis</option>
+                                <option value="Osteoporosis" >Osteoporosis</option>
+                                <option value="Trastornos de salud mental" >Trastornos de salud mental</option>
+                                <option value="Enfermedades renales crónicas" >Enfermedades renales crónicas</option>
+                                <option value="Cáncer" >Cáncer</option>
+                                <option value="Alzheimer y/u otras formas de demencia" >Enfermedad de Alzheimer y/u otras formas de demencia</option>
+                                <option value="Cirrosis" >Cirrosis</option>
+                                <option value="Hepatitis crónica" >Hepatitis crónica</option>
+                                <option value="Esclerosis múltiple" >Esclerosis múltiple</option>
+                                <option value="Fibromialgia " >Fibromialgia </option>
+                            </select>
 
-            <button className='buttonPrincipalGlobal' onClick={Regresar}>Cancelar</button>
+                        </div>
 
-          </div>
-        </div>
+                        <div className='containerInputLabel'>
+                            <label className='labelInput'>Alergias:</label>
 
-      </div>
+                            <input type="text" id="AlergiasInput" className="inputGlobal" placeholder="Alergias" value={alergias} onChange={handleInputAlergias} onInput={handleInput} required />
 
-    </body>
-  );
-};
+                        </div>
 
-export default ModuleSaludNewExpedienteID;
+                        <div className='containerInputLabel'>
+                            <label className='labelInput'>Tipo de sangre:</label>
+                            <select name="select" className="inputGlobal" value={sangre} onChange={handleInputSangre} required>
+                                <option value="">Selecciona tipo de sangre</option>
+                                <option value="Tipo A-">Tipo A+</option>
+                                <option value="Tipo A-" >Tipo A-</option>
+                                <option value="Tipo B+" >Tipo B+</option>
+                                <option value="Tipo AB+" >Tipo AB+</option>
+                                <option value="Tipo AB-" >Tipo AB-</option>
+                                <option value="Tipo O+" >Tipo O+</option>
+                                <option value="Tipo O-" >Tipo O-</option>
+                            </select>
+                        </div>
+
+                        <button type="submit" className='buttonPrincipalGlobal' onClick={handleSubmit} >Enviar </button>
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div className="">
+            </div>
+        </body>
+    );
+}
+
+export default ModuleSaludNewConsultaForm;

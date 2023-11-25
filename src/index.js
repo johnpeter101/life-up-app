@@ -34,6 +34,8 @@ import Form_user_finally from './Componentes/Modulos/Usuarios/Insert/Form_finall
 
 //delete
 import ModuleUserDelete from './Componentes/Modulos/Usuarios/Delete/Delete';
+//update
+import ModuleUserUpdate from './Componentes/Modulos/Usuarios/Modify/ModifyUser';
 
 //modulo de salud
 import Salud_dashboard from './Componentes/Salud/Salud_home';
@@ -89,11 +91,14 @@ import ModuleSaludNewExpedienteID from './Componentes/Modulos/Enfermeria/Expedie
 import ModuleSaludNewExpedienteCreate from './Componentes/Modulos/Enfermeria/Expediente/NuevoExpedienteForm2';
 import ModuleSaludNewConsultaID from './Componentes/Modulos/Enfermeria/Consultas/NuevaConsultaForm1';
 import ModuleSaludNewConsultaForm from './Componentes/Modulos/Enfermeria/Consultas/NuevaConsultaForm2';
+import ModuleSaludConsultaForm from './Componentes/Modulos/Enfermeria/Consultas/Consultas';
+import ModuleSaludExpedienteConsultaForm from './Componentes/Modulos/Enfermeria/Expediente/Expediente';
 
 
 //taller
 import ModuleTallerAddForm from './Componentes/Modulos/Talleres/Agregar/AgregarTaller';
 import ModuleTallerDelete from './Componentes/Modulos/Talleres/Eliminar/DeleteTaller';
+import ModuleTallerUpdate from './Componentes/Modulos/Talleres/Actualizar/UpdateTaller';
 
 const router = createBrowserRouter([
   {
@@ -129,7 +134,7 @@ const router = createBrowserRouter([
   {
     path: "/formFinal",
     element: <Form_user_finally/>,
-  },
+    },
 //modulo de slaud
 {
   path: "/saludDashboard",
@@ -177,6 +182,7 @@ const router = createBrowserRouter([
   path: "/deleteTaller",
   element: <TallerDelete/>,
 },
+
 {
   path: "/ActualizarTaller",
   element: <ActualizarTaller/>,
@@ -207,11 +213,11 @@ const router = createBrowserRouter([
   element: <Formulario/>,
 },
 {
-  path: "/DeleteUserPersonal",
+    path: "/DeleteUserPersonal/:personalID",
   element: <DeleteUser/>,
 },
 {
-  path: "/EditUserPersonal",
+  path:"/EditUserPersonal/:personalID",
   element: <EditSuperUsuario/>,
 },
 
@@ -256,37 +262,48 @@ const router = createBrowserRouter([
   path: "/MouleUserDelete",
   element: <ModuleUserDelete/>,
 },
-
+{
+  path: "/UpdateUsuarios",
+  element: < ModuleUserUpdate />,
+},
 ///psico
 {
-  path: "/PsicologiaNewConsultID",
+    path: "/PsicologiaNewConsultID",
   element: <ModulePsicoNuevaConsultaID/>,
 },
 {
-  path: "/Psicologia-NewConsult-Form",
+    path: "/Psicologia-NewConsult-Form",
   element: <ModulePsicoNuevaConsultaForm/>,
+},
+{
+  path: "/Consulta-Enfermeria",
+  element: <ModuleSaludConsultaForm/>,
+},
+{
+  path: "/ExpedienteConsulta-Enfermeria",
+  element: <ModuleSaludExpedienteConsultaForm />,
 },
 
 ////////////////////////////////////////////////----------------------salud
 
-{////////////////////////////////////////////////----------------------espediente
-  path: "/Salud-Expediente-ID",
-  element: <ModuleSaludNewExpedienteID/>,
-},
+{////////////////////////////////////////////////----------------------expediente
+        path: "/Salud-Expediente-ID",
+        element: <ModuleSaludNewExpedienteID />,
+    },
 
-{
-  path: "/Salud-Expediente-Create",
-  element: <ModuleSaludNewExpedienteCreate/>,
-},
-////////////////////////////////////////////////----------------------consultas
-{
-  path: "/Salud-Consulta-ID",
-  element: <ModuleSaludNewConsultaID/>,
-},
-{
-  path: "/Salud-Consulta-Create",
-  element: <ModuleSaludNewConsultaForm/>,
-},
+    {
+        path: "/Salud-Expediente-Create",
+        element: <ModuleSaludNewExpedienteCreate />,
+    },
+    ////////////////////////////////////////////////----------------------consultas
+    {
+        path: "/Salud-Consulta-ID",
+        element: <ModuleSaludNewConsultaID />,
+    },
+    {
+        path: "/Salud-Consulta-Create",
+        element: <ModuleSaludNewConsultaForm />,
+    },
 
 ////////////////////////////////////////////////----------------------taller
 //add
@@ -299,7 +316,10 @@ const router = createBrowserRouter([
   path: "/Taller-Delete",
   element: <ModuleTallerDelete/>,
 },
-
+{
+  path: "/Taller-Update",
+  element: <ModuleTallerUpdate />,
+ },
 
 
 

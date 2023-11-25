@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////-----------> IMPORTS 
 import React, { useState, useEffect } from 'react';
 import Swal from 'sweetalert2';
@@ -11,7 +12,11 @@ import axios from 'axios';
 import GenderChart from '../Widgets/Graficos/GraficaPastelSexos'; // Asegúrate de importar el componente adecuadamente
 import LineChart from '../Widgets/Graficos/GraficoLineasRegistroUsuarios'; // Ajusta la ruta del archivo según tu estructura de carpetas
 import WidgetPersonalInformation from '../Widgets/CardUserPersonal';
-import { FaCheck, FaCopy } from 'react-icons/fa';
+import { FaEdit, FaCopy, FaTrash, FaSearch } from 'react-icons/fa';
+import { Link } from 'react-router-dom';
+
+
+
 
 /*--------------------------------------------------------  FUNCION PRINCIPAL  -------------------------------------------------------------- */
 const MenuUsers = () => {
@@ -34,16 +39,31 @@ const MenuUsers = () => {
     const [URL_photo, setPhotoUrl] = useState("https://cdn-icons-png.flaticon.com/512/149/149071.png");
     const [datosSexo, setDatosSexos] = useState("Telefono");
     const [datosFechas, setDatosFechas] = useState("Telefono");
+    const [showModifyUser, setShowModifyUser] = useState(false);
+    const [userDetails, setUserDetails] = useState(null);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [selectedUser, setSelectedUser] = useState(null);
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////-----------> FUNCIONES 
-    const handleRowClick = (personalID) => {
-        // Copiar al portapapeles
-        navigator.clipboard.writeText(personalID);
-        setCopiedPersonalID(personalID);
-        //obtener info de usuario
-        getInfoCard(personalID);
-        //obtene rfoto
-        getPhoto(personalID);
+    const handleRowClick = async (user) => {
+        // Mostrar los detalles del usuario en la parte derecha
+        setNombre(user.Nombre);
+        setDireccion(user.Direccion);
+        setSexo(user.Sexo);
+        setFamiliar(user.Familiar);
+        setEdad(user.Edad);
+        setTelefono(user.Telefono);
+        setFecha(user.Fecha);
+        setCopiedPersonalID(user.UserID);
+
+        // Obtener la foto del usuario
+        getPhoto(user.UserID);
+        setSelectedUser(user);
+
+    };
+   
+    const navigateToUpdate = (personalID) => {
+        navigate("/UpdateUsuarios", { state: { ID_PERSONAL: personalID, Rol: Rol } });
     };
 
     const handleCopied = (personalID) => {
@@ -118,17 +138,18 @@ const MenuUsers = () => {
 
     const DeleteUser = () => { navigate("/MouleUserDelete" , { state: { ID_PERSONAL: ID, Rol: Rol } }); }
 
-    function GoLogOut() { navigate("/loader-Login"); }
+    function GoLogOut() { navigate("/loader-Login");}
 
-    const ModifyUser = () => { navigate("/EditUserPersonal"); }
-
+    const UpdateUser = () => {navigate("/UpdateUsuarios"); }
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////-----------> USE EFFECT() 
+   
     useEffect(() => {
         //Obtener tabla de usuarios
         const fetchUsers = async () => {
             try {
                 const response = await fetch(backendUrl + '/api/tableUsers');
                 const responseData = await response.json();
+                console.log(response.data);
                 if (response.ok) {
                     setUsers(responseData);
                 } else {
@@ -171,7 +192,66 @@ const MenuUsers = () => {
         getDistribucionFechas();
         fetchUsers();
     }, []);
-
+    function Alerta(icono, titulo, texto) {
+        Swal.fire({
+            icon: icono,
+            title: titulo,
+            text: texto,
+            confirmButtonColor: '#4CAF50',
+            confirmButtonText: 'Aceptar'
+        })
+    }
+    function AlertaTimer(icono, titulo, texto, tiempo) {
+        Swal.fire({
+            position: 'center',
+            icon: icono,
+            title: titulo,
+            text: texto,
+            showConfirmButton: false,
+            timer: tiempo
+        })
+    }
+    function msgDelete(user) {
+        Swal.fire({
+            title: '¿Deseas eliminar al siguiente Usuario? ' + user.UserID,
+            showDenyButton: false,
+            showCancelButton: true,
+            confirmButtonText: 'Sí, eliminar',
+            denyButtonText: 'No, cancelar',
+        }).then((result) => {
+            /* Read more about isConfirmed, isDenied below */
+            if (result.isConfirmed) {
+                Swal.fire('Eliminado', '', 'success')
+                //eliminar
+                EliminarTaller(user.UserID);
+            } else if (result.isDenied) {
+                Swal.fire('Changes are not saved', '', 'info')
+            }
+        })
+    }
+    function EliminarTaller(id) {
+        const requestData = {
+            ID: id
+        };
+        axios.post(backendUrl + '/api/DeleteUser', requestData)
+            .then(response => {
+                console.log(response.data);
+                if (response.status === 200) {
+                    AlertaTimer('success', 'Completado', 'Se ha eliminado correctamente', 1500);
+                    window.location.reload();
+                } else {
+                    Alerta('error', 'Sin éxito', 'Falló al eliminar la información');
+                }
+            })
+            .catch(error => {
+                console.error(error);
+            });
+    }
+    const filteredUsers = users.filter(user =>
+    Object.values(user).some(value =>
+        String(value).toLowerCase().includes(searchTerm.toLowerCase())
+    )
+);
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////-----------> RETURN () 
     return (
         <body>
@@ -185,9 +265,6 @@ const MenuUsers = () => {
                     <div className='optionBtn' onClick={InsertUser}>
                         <label className='txtBTN'>Agregar usuario</label>
                     </div>
-                    <div className='optionBtn' onClick={DeleteUser}>
-                        <label className='txtBTN'>Eliminar usuario</label>
-                    </div>
                     <div className='optionBtn' onClick={regresar}>
                         <label className='txtBTN'>Volver</label>
                     </div>
@@ -199,7 +276,6 @@ const MenuUsers = () => {
             <div className="right-panel">
                 <div className='formSecundarioBTN'>
                     <button className='buttonPrincipalGlobal' onClick={InsertUser}>Agregar usuario</button>
-                    <button className='buttonPrincipalGlobal' onClick={DeleteUser}>Eliminar usuario</button>
                     <button className='buttonPrincipalGlobal' onClick={regresar}>Volver </button>
          
                 </div>
@@ -227,50 +303,88 @@ const MenuUsers = () => {
                     <div class="CARD">
                         <WidgetPersonalInformation
                             Nombre={Nombre}
-                            Direccion={Direccion}
                             Sexo={Sexo}
                             Fecha={Fecha}
-                            Familiar={Familiar}
                             Edad={Edad}
                             Telefono={Telefono}
                             ID_user={copiedPersonalID}
                             ImageURL={URL_photo}
                         />
                     </div>
+                    
                     <div class="TABLA">
                         <h1 className='titleForm'>Usuarios registrados {Rol} </h1>
-                        <table className='table'>
-                            <thead>
-                                <tr>
-                                    <th>Actions</th>
-                                    <th>ID de Usuario</th>
-                                    <th>Centro</th>
-                                    <th>Nombre</th>
-                                    <th>Apellido Paterno</th>
-                                    <th>Apellido Materno</th>
-                                    <th>Edad</th>
-                                    <th>Telefono</th>
-                                    <th>Sexo</th>
-                                    <th>Fecha</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {users.map((user) => (
-                                    <tr key={user.UserID} onClick={() => handleRowClick(user.UserID)}>
-                                        <td onClick={() => handleCopied(user.UserID)}><FaCopy /> </td>
-                                        <td>{user.UserID}</td>
-                                        <td>{user.CentroID}</td>
-                                        <td>{user.Nombre}</td>
-                                        <td>{user.ApellidoPaterno}</td>
-                                        <td>{user.ApellidoMaterno}</td>
-                                        <td>{user.Edad}</td>
-                                        <td>{user.Telefono}</td>
-                                        <td>{user.Sexo}</td>
-                                        <td>{user.Fecha}</td>
+                        <div className="search-box" style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            backgroundColor: 'transparent',
+                            borderBottom: '1px solid #ccc',
+                            padding: '5px',
+                            marginBottom: '10px'
+                        }}>
+                            <FaSearch style={{ marginRight: '5px', color: '#777' }} />
+                            <input
+                                type="text"
+                                placeholder="Buscar por nombre de usuario"
+                                value={searchTerm}
+                                onChange={e => setSearchTerm(e.target.value)}
+                                style={{
+                                    flex: '1',
+                                    border: 'none',
+                                    outline: 'none',
+                                    padding: '8px',
+                                    backgroundColor: 'transparent',
+                                    color: '#000'
+                                }}
+                            />
+                        </div>
+
+                        
+                        <div className="TABLA" style={{ overflowY: 'auto', maxHeight: '300px' }}>
+                            <table className='table'>
+                                <thead>
+                                    <tr>
+                                        <th style={{ width: '30px' }}></th>
+                                        <th style={{ width: '30px' }}></th>
+                                        <th style={{ width: '30px' }}></th>
+                                        <th style={{ width: '100px' }}>ID de Usuario</th>
+                                        <th style={{ width: '100px' }}>Centro</th>
+                                        <th style={{ width: '150px' }}>Nombre</th>
+                                        <th style={{ width: '150px' }}>Apellido Paterno</th>
+                                        <th style={{ width: '150px' }}>Apellido Materno</th>
+                                        <th style={{ width: '50px' }}>Edad</th>
+                                        <th style={{ width: '100px' }}>Telefono</th>
+                                        <th style={{ width: '80px' }}>Sexo</th>
+                                        <th style={{ width: '100px' }}>Fecha</th>
                                     </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody>
+                                    {filteredUsers.map((user) => (
+                                        <tr key={user.UserID} onClick={() => handleRowClick(user)}>
+                                            <td style={{ width: '30px' }} onClick={() => handleCopied(user.UserID)}><FaCopy /></td>
+                                            <td style={{ width: '30px' }}>
+                                                <Link to="/UpdateUsuarios" state={{ userDetails: user }}>
+                                                    <FaEdit />
+                                                </Link>
+                                            </td>
+                                            <td style={{ width: '30px' }} onClick={() => msgDelete(user)}>
+                                                <FaTrash />
+                                            </td>
+                                            <td style={{ width: '100px' }}>{user.UserID}</td>
+                                            <td style={{ width: '100px' }}>{user.CentroID}</td>
+                                            <td style={{ width: '150px' }}>{user.Nombre}</td>
+                                            <td style={{ width: '150px' }}>{user.ApellidoPaterno}</td>
+                                            <td style={{ width: '150px' }}>{user.ApellidoMaterno}</td>
+                                            <td style={{ width: '50px' }}>{user.Edad}</td>
+                                            <td style={{ width: '100px' }}>{user.Telefono}</td>
+                                            <td style={{ width: '80px' }}>{user.Sexo}</td>
+                                            <td style={{ width: '100px' }}>{user.Fecha}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+
                     </div>
                 </div>
             </div>

@@ -17,6 +17,7 @@ import './styleAdd.css';
 
 import logo from '../../GlobalStyles/images/logo.svg';
 import imagen from '../../GlobalStyles/images/image1.png';
+import { useParams } from 'react-router-dom';
 
 const DeleteUser = () => {
   const fade = useSpring({ opacity: 1, from: { opacity: 0 } });
@@ -40,11 +41,19 @@ const DeleteUser = () => {
 
   const navigate = useNavigate();
 
+  const { personalID } = useParams();
+
+    const { user } = useParams();
 
 
 
 
-
+    useEffect(() => {
+        msgDelete(user);
+        if (personalID) {
+            setPersonalId(personalID);
+        }
+    }, [personalID]);
   //////////////////////////////////////////////////////////////---------------> Metodo para hacer el envío del formulario
   const handleSubmit = () => {
 
@@ -100,10 +109,6 @@ const DeleteUser = () => {
                 //Swal.fire('Eliminado', '', 'success')
                 //eliminar
                 msgDelete();
-        
-        
-        
-        
               } else if (result.isDenied) {
                 Swal.fire('Changes are not saved', '', 'info')
               }
@@ -151,31 +156,31 @@ const DeleteUser = () => {
 
   }
 
-  function msgDelete(){
-    Swal.fire({
-      title: '¿Deseas eliminar al siguiente usuario?',
-      html: '<div style="text-align: left;"><strong>ID:  </strong>' + PersonalID + '</div><div style="text-align: left;"><strong>Rol designado:  </strong>' + Rol + '</div><div style="text-align: left;"><strong>Email:  </strong>' + Email + '</div><div style="text-align: left;"><strong>Centro:  </strong>' + ID_Centro + '</div><div style="text-align: left;"><strong>Acceso:  </strong>' + Acceso + '</div>',
-      showDenyButton: false,
-      showCancelButton: true,
-      confirmButtonText: 'Sí, eliminar',
-      denyButtonText: 'No, cancelar',
-    }).then((result) => {
-      /* Read more about isConfirmed, isDenied below */
-      if (result.isConfirmed) {
-        //Swal.fire('Eliminado', '', 'success')
-        //eliminar
-        DeleteUser(PersonalID);
-      } else if (result.isDenied) {
-        Swal.fire('Changes are not saved', '', 'info')
-      }
-    })
-  }
+ 
   //////////////////////////////////////////////////////////////---------------> Metodo para manejar el cambio de estado del combo de Rol
 
 
   //////////////////////////////////////////////////////////////---------------> Método para validar si los textbox tienen texto y crear el user ID
 
-
+    function msgDelete(user) {
+        Swal.fire({
+            title: '¿Deseas eliminar al siguiente usuario?',
+            html: '<div style="text-align: left;"><strong>ID:  </strong>' + user.PersonalID + '</div><div style="text-align: left;"><strong>Rol designado:  </strong>' + user.Rol + '</div><div style="text-align: left;"><strong>Email:  </strong>' + Email + '</div><div style="text-align: left;"><strong>Centro:  </strong>' + ID_Centro + '</div><div style="text-align: left;"><strong>Acceso:  </strong>' + Acceso + '</div>',
+            showDenyButton: false,
+            showCancelButton: true,
+            confirmButtonText: 'Sí, eliminar',
+            denyButtonText: 'No, cancelar',
+        }).then((result) => {
+            /* Read more about isConfirmed, isDenied below */
+            if (result.isConfirmed) {
+                //Swal.fire('Eliminado', '', 'success')
+                //eliminar
+                DeleteUser(user.PersonalID);
+            } else if (result.isDenied) {
+                Swal.fire('Changes are not saved', '', 'info')
+            }
+        })
+    }
   function Alerta(icono, titulo, texto) {
     Swal.fire({
       icon: icono,
@@ -228,24 +233,15 @@ const DeleteUser = () => {
         <div className="right-panel-content">
           <div className='formContainer'>
             <animated.h1 style={fade} className="titleForm">Eliminar usuarios</animated.h1>
-
             <div className='containerInputLabel'>
               <label className='labelInput'>Ingresa el ID del Usuario</label>
               <input class="inputGlobal" placeholder="CDIF-0123" type="text" value={PersonalID} onChange={e => setPersonalId(e.target.value)} required />
             </div>
-
-
-
-
             <button className='buttonPrincipalGlobal' onClick={handleSubmit}>Buscar usuario</button>
-
             <button className='buttonPrincipalGlobal' onClick={Menu}>Cancelar</button>
-
           </div>
         </div>
-
       </div>
-
     </body>
   );
 };

@@ -9,15 +9,16 @@ import imagen from '../../../GlobalStyles/images/image1.png';
 import GenderChart from '../Widgets/Graficos/GraficaPastelSexos'; // Asegúrate de importar el componente adecuadamente
 import LineChart from '../Widgets/Graficos/GraficoLineasRegistroUsuarios'; // Ajusta la ruta del archivo según tu estructura de carpetas
 import WidgetPersonalInformation from '../Widgets/CardUserPersonal';
-import { FaCheck, FaCopy } from 'react-icons/fa';
+import { FaEdit, FaCopy, FaTrash, FaSearch, FaPlus } from 'react-icons/fa';
 import axios from 'axios';
+import { Link } from 'react-router-dom';
 
 /*--------------------------------------------------------  FUNCION PRINCIPAL  -------------------------------------------------------------- */
 const MenuPsicologia = () => {
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////-----------> DECLARACIONES 
     const routeLocation = useLocation();
-    const ID =  routeLocation.state && routeLocation.state.ID_PERSONAL;
+    const ID_Personal = routeLocation.state && routeLocation.state.ID_PERSONAL;
     const Rol =  routeLocation.state && routeLocation.state.Rol;
     const [users, setUsers] = useState([]);
     const [psicologiaData, setPsicologia] = useState([]);
@@ -34,17 +35,31 @@ const MenuPsicologia = () => {
     const [URL_photo, setPhotoUrl] = useState("https://cdn-icons-png.flaticon.com/512/149/149071.png");
     const [datosSexo, setDatosSexos] = useState("Telefono");
     const [datosFechas, setDatosFechas] = useState("Telefono");
-    
+
+    const [Motivo, setMotivo] = useState("Motivo");
+    const [Objetivos, setObjetivos] = useState("Objetivos");
+    const [Recomendaciones, setRecomendaciones] = useState("Recomendaciones");
+    const [FechaConsulta, setFechaConsulta] = useState("FechaConsulta");
+    const [selectedUser, setSelectedUser] = useState(null);
+    const [searchTerm, setSearchTerm] = useState('');
+   
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////-----------> FUNCIONES 
   
-    const handleRowClick = (personalID) => {
-        // Copiar al portapapeles
-        navigator.clipboard.writeText(personalID);
-        setCopiedPersonalID(personalID);
-        //obtener info de usuario
-        getInfoCard(personalID);
-        //obtene rfoto
-        getPhoto(personalID);
+    const handleRowClick = async (user) => {
+        // Mostrar los detalles del usuario en la parte derecha
+        setNombre(user.Nombre);
+        setDireccion(user.Direccion);
+        setSexo(user.Sexo);
+        setFamiliar(user.Familiar);
+        setEdad(user.Edad);
+        setTelefono(user.Telefono);
+        setFecha(user.Fecha);
+        setCopiedPersonalID(user.UserID);
+
+        // Obtener la foto del usuario
+        getPhoto(user.UserID);
+        setSelectedUser(user);
+
     };
 
     const handleCopied = (personalID) => {
@@ -59,7 +74,30 @@ const MenuPsicologia = () => {
             timer: 800
         })
     };
+    const getConsultaInfo = async (ID) => {
+        try {
+            // Datos a enviar
+            const formData = {
+                ID
+            };
 
+            // Petición al servidor
+            const response = await axios.post(backendUrl + '/api/tableAllPsicologia', formData);
+
+            // Manejar la respuesta del servidor si es necesario
+            const consultaData = response.data;
+
+            // Actualizar el estado con los datos de la consulta
+            setMotivo(consultaData.Motivo);
+            setObjetivos(consultaData.Objetivos);
+            setRecomendaciones(consultaData.Recomendaciones);
+            setFechaConsulta(consultaData.FechaConsulta);
+
+        } catch (error) {
+            // Manejar errores si ocurre alguno
+            console.error('Error al obtener los datos de la consulta:', error.message);
+        }
+    };
     const getInfoCard = async (ID) => {
         //datos a enviar
         const formData = {
@@ -112,7 +150,7 @@ const MenuPsicologia = () => {
             });
     }
  const regresar = () => {
-    navigate('/MenuApp' , { state: { ID_PERSONAL: ID, Rol: Rol} });
+     navigate('/MenuApp', { state: { ID_PERSONAL: ID_Personal, Rol: Rol} });
   };
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////-----------> USE EFFECT()
@@ -134,7 +172,7 @@ const MenuPsicologia = () => {
 
     const fetchConsultaPsicologia = async () => {
         try {
-            const response = await fetch(backendUrl + '/api/tablePsicologia');
+            const response = await fetch(backendUrl + '/api/tableAllPsicologia');
             const responseData = await response.json();
             if (response.ok) {
                 setPsicologia(responseData);
@@ -179,6 +217,7 @@ const MenuPsicologia = () => {
     getDistribucionSexo();
     getDistribucionFechas();
     fetchUsers();
+    getConsultaInfo();
     }, []);
 
     //usuarios
@@ -194,7 +233,16 @@ const MenuPsicologia = () => {
     const ModifyUser = () => {
         navigate("/EditUserPersonal");
     }
-
+    const filteredUsers = users.filter(user =>
+        Object.values(user).some(value =>
+            String(value).toLowerCase().includes(searchTerm.toLowerCase())
+        )
+    );
+    const filteredMotivo = users.filter(Motivo =>
+        Object.values(Motivo).some(value =>
+            String(value).toLowerCase().includes(searchTerm.toLowerCase())
+        )
+    );
     return (
         <body>
             <div className="left-panel">
@@ -205,9 +253,6 @@ const MenuPsicologia = () => {
                     <div className='line'></div>
                 </div>
                 <div className='contMenu' >
-                <div className='optionBtn' onClick={NuevaConsulta}>
-                        <label className='txtBTN'>Nueva consulta</label>
-                    </div>
                    
                     <div className='optionBtn' onClick={regresar}>
                         <label className='txtBTN'>Volver</label>
@@ -264,12 +309,38 @@ const MenuPsicologia = () => {
                         />
                     </div>
                     <div class="TABLA">
-                        <h1 className='titleForm'>Usuarios registrados {Rol} </h1>
+                    <h1 className='titleForm'>Usuarios registrados {Rol} </h1>
+
+                        <div className="search-box" style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            backgroundColor: 'transparent',
+                            borderBottom: '1px solid #ccc',
+                            padding: '5px',
+                            marginBottom: '10px'
+                        }}>
+                            <FaSearch style={{ marginRight: '5px', color: '#777' }} />
+                            <input
+                                type="text"
+                                placeholder="Buscar por nombre de usuario"
+                                value={searchTerm}
+                                onChange={e => setSearchTerm(e.target.value)}
+                                style={{
+                                    flex: '1',
+                                    border: 'none',
+                                    outline: 'none',
+                                    padding: '8px',
+                                    backgroundColor: 'transparent',
+                                    color: '#000'
+                                }}
+                            />
+                        </div>
+                        <div className="TABLA" style={{ overflowY: 'auto', maxHeight: '250px'}}>
                         <table className='table'>
                             <thead>
                                 <tr>
-                                    <th>Actions</th>
-                                   
+                                    <th></th>
+                                    <th></th>
                                     <th>Centro</th>
                                     <th>Nombre</th>
                                     <th>Apellido Paterno</th>
@@ -278,10 +349,14 @@ const MenuPsicologia = () => {
                                 </tr>
                             </thead>
                             <tbody>
-                                {users.map((user) => (
-                                    <tr key={user.UserID} onClick={() => handleRowClick(user.UserID)}>
+                                    {filteredUsers.map((user) => (
+                                        <tr key={user.UserID} onClick={() => handleRowClick(user)}>
                                         <td onClick={() => handleCopied(user.UserID)}><FaCopy /> </td>
-                                      
+                                            <td>
+                                                <Link to="/PsicologiaNewConsultID" state={{ userDetails: user }}>
+                                                    <FaPlus />
+                                                </Link>
+                                            </td>
                                         <td>{user.CentroID}</td>
                                         <td>{user.Nombre}</td>
                                         <td>{user.ApellidoPaterno}</td>
@@ -291,13 +366,13 @@ const MenuPsicologia = () => {
                                 ))}
                             </tbody>
                         </table>
-
+                        </div>
                         <h1 className='titleForm'>Consultas</h1>
+
+                        <div className="TABLA" style={{ overflowY: 'auto', maxHeight: '300px' }}>
                         <table className='table'>
                             <thead>
                                 <tr>
-                                    <th>Actions</th>
-                                   <th>Numero</th>
                                     <th>User ID</th>
                                     <th>Motivo</th>
                                     <th>Objetivos</th>
@@ -307,18 +382,17 @@ const MenuPsicologia = () => {
                             </thead>
                             <tbody>
                                 {psicologiaData.map((psicoData) => (
-                                    <tr key={psicologiaData.Numero} onClick={() => handleRowClick(psicoData.UserID)}>
-                                        <td onClick={() => handleCopied(psicoData.UserID)}><FaCopy /> </td>
-                                        <td>{psicoData.Numero}</td>
+                                    <tr key={psicoData.Numero}>
                                         <td>{psicoData.UserID}</td>
                                         <td>{psicoData.Motivo}</td>
-                                        <td>{psicoData.Objetivo}</td>
+                                        <td>{psicoData.Objetivos}</td> 
                                         <td>{psicoData.Recomendaciones}</td>
                                         <td>{psicoData.Fecha}</td>
                                     </tr>
                                 ))}
                             </tbody>
-                        </table>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>
